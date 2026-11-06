@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Download Invoice PDF — In-Context Prototype</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['JetBrains Mono', 'monospace'],
+            sans: ['DM Sans', 'Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --background: oklch(1 0 0);
+      --foreground: oklch(0.145 0 0);
+      --card: oklch(1 0 0);
+      --card-foreground: oklch(0.145 0 0);
+      --primary: oklch(0.205 0 0);
+      --primary-foreground: oklch(0.985 0 0);
+      --secondary: oklch(0.97 0 0);
+      --secondary-foreground: oklch(0.205 0 0);
+      --muted: oklch(0.97 0 0);
+      --muted-foreground: oklch(0.556 0 0);
+      --accent: oklch(0.97 0 0);
+      --accent-foreground: oklch(0.205 0 0);
+      --destructive: oklch(0.577 0.245 27.325);
+      --border: oklch(0.922 0 0);
+      --input: oklch(0.922 0 0);
+      --ring: oklch(0.708 0 0);
+    }
+    .dark {
+      --background: oklch(0.145 0 0);
+      --foreground: oklch(0.985 0 0);
+      --card: oklch(0.205 0 0);
+      --card-foreground: oklch(0.985 0 0);
+      --primary: oklch(0.922 0 0);
+      --primary-foreground: oklch(0.205 0 0);
+      --secondary: oklch(0.269 0 0);
+      --secondary-foreground: oklch(0.985 0 0);
+      --muted: oklch(0.269 0 0);
+      --muted-foreground: oklch(0.708 0 0);
+      --accent: oklch(0.269 0 0);
+      --accent-foreground: oklch(0.985 0 0);
+      --destructive: oklch(0.704 0.191 22.216);
+      --border: oklch(1 0 0 / 10%);
+      --input: oklch(1 0 0 / 15%);
+      --ring: oklch(0.556 0 0);
+    }
+    body { background: var(--background); color: var(--foreground); font-family: 'JetBrains Mono', monospace; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .anim-spin { animation: spin 0.8s linear infinite; }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .shimmer-bg {
+      background-image: radial-gradient(circle, #d1d5db 1px, transparent 1px);
+      background-size: 6px 6px;
+    }
+    .shimmer-overlay {
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.7) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+    .fade-in { animation: fadeIn 0.2s ease-out; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Theme toggle -->
+  <button class="fixed top-4 right-4 z-50 text-xs px-3 py-1.5 border border-dashed font-mono cursor-pointer"
+    style="background:var(--card);border-color:var(--border);color:var(--foreground)"
+    onclick="document.documentElement.classList.toggle('dark');document.documentElement.classList.toggle('light')">
+    Toggle Theme
+  </button>
+
+  <!-- Header -->
+  <header style="border-bottom:1px dashed var(--border);background:var(--card)">
+    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold" style="color:var(--foreground)">UPI Invoice Maker</h1>
+        <p class="text-sm" style="color:var(--muted-foreground)">Create professional invoices with QR payment codes</p>
+      </div>
+      <p class="text-xs" style="color:var(--muted-foreground)">Press <span style="display:inline-flex;align-items:center;justify-content:center;padding:0.1rem 0.35rem;border:1px dashed var(--border);background:var(--muted);color:var(--muted-foreground);font-size:0.7rem;min-width:1.3rem">D</span> to switch themes</p>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="mx-auto max-w-7xl px-6 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+      <!-- Left: Wizard placeholder -->
+      <div class="space-y-6">
+        <div class="flex items-center gap-2">
+          <div class="flex h-8 w-8 items-center justify-center border border-dashed shrink-0 text-xs" style="border-color:var(--border);background:var(--muted);color:var(--muted-foreground)">1</div>
+          <div class="h-px flex-1" style="border-top:1px dashed var(--border)"></div>
+          <div class="flex h-8 w-8 items-center justify-center border border-dashed shrink-0 text-xs" style="border-color:var(--border);background:var(--muted);color:var(--muted-foreground)">2</div>
+          <div class="h-px flex-1" style="border-top:1px dashed var(--border)"></div>
+          <div class="flex h-8 w-8 items-center justify-center border border-dashed shrink-0 text-xs" style="border-color:var(--border);background:var(--muted);color:var(--muted-foreground)">3</div>
+          <div class="h-px flex-1" style="border-top:1px dashed var(--border)"></div>
+          <div class="flex h-8 w-8 items-center justify-center border border-dashed shrink-0 text-xs" style="border-color:var(--border);background:var(--muted);color:var(--muted-foreground)">4</div>
+          <div class="h-px flex-1" style="border-top:1px dashed var(--border)"></div>
+          <div class="flex h-8 w-8 items-center justify-center border border-dashed shrink-0 text-xs" style="border-color:var(--primary);background:var(--primary);color:var(--primary-foreground)">5</div>
+        </div>
+
+        <!-- Summary step card -->
+        <div class="p-6" style="border:1px dashed var(--border);background:var(--card)">
+          <h3 class="text-sm font-semibold mb-4" style="color:var(--foreground)">Summary</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs block mb-1" style="color:var(--muted-foreground)">UPI ID</label>
+              <input id="upi-input" class="w-full px-3 py-2 text-sm outline-none" style="border:1px dashed var(--border);background:transparent;color:var(--foreground);font-family:'JetBrains Mono',monospace" value="acme@okaxis" oninput="checkFinalizeable()" />
+            </div>
+            <div>
+              <label class="text-xs block mb-1" style="color:var(--muted-foreground)">Notes</label>
+              <textarea class="w-full px-3 py-2 text-sm outline-none" rows="2" style="border:1px dashed var(--border);background:transparent;color:var(--foreground);font-family:'JetBrains Mono',monospace;resize:vertical">Thank you for your business!</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nav buttons -->
+        <div class="flex items-center justify-between gap-4">
+          <button class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium" style="background:transparent;border:1px dashed var(--border);color:var(--foreground);cursor:pointer">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"></path></svg>
+            Previous
+          </button>
+          <span class="text-sm" style="color:var(--muted-foreground)">Step 5 of 5</span>
+          <button id="finalize-btn" onclick="handleFinalize()" class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium min-w-[9rem] justify-center" style="background:var(--primary);color:var(--primary-foreground);border:1px solid transparent;cursor:pointer">
+            <span id="finalize-text">Generate Invoice</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Invoice Preview + Download Button -->
+      <div class="lg:sticky lg:top-8 h-fit">
+        <!-- Invoice Preview -->
+        <div id="invoice-preview" style="border:1px dashed var(--border);background:var(--card)" class="p-8">
+          <div class="bg-white text-gray-900" style="font-family:'DM Sans','Inter',sans-serif;font-size:14px">
+            <!-- Meta bar -->
+            <div class="flex items-start justify-between pb-4" style="border-bottom:1px solid #e5e7eb">
+              <div>
+                <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Invoice No</p>
+                <p class="text-base font-semibold text-gray-900">INV-001</p>
+              </div>
+              <div class="flex gap-8 text-right">
+                <div>
+                  <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Issued</p>
+                  <p class="text-base font-semibold text-gray-900">6/10/26</p>
+                </div>
+                <div>
+                  <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Due Date</p>
+                  <p class="text-base font-semibold text-gray-900">5/11/26</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- From / To -->
+            <div class="grid grid-cols-2" style="border-bottom:1px solid #e5e7eb">
+              <div class="py-4 pr-4" style="border-right:1px solid #e5e7eb">
+                <p class="text-xs uppercase tracking-widest text-gray-400 mb-3">From</p>
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-500">A</div>
+                <h2 class="mt-2 text-lg font-bold text-gray-900">Acme Corp</h2>
+                <p class="text-gray-400 text-xs mt-0.5">hello@acme.co</p>
+                <p class="text-gray-400 text-xs mt-1">123 Business St, Mumbai</p>
+              </div>
+              <div class="py-4 pl-4">
+                <p class="text-xs uppercase tracking-widest text-gray-400 mb-3">To</p>
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-500">J</div>
+                <h2 class="mt-2 text-lg font-bold text-gray-900">Jane Client</h2>
+                <p class="text-gray-400 text-xs mt-0.5">jane@client.com</p>
+                <p class="text-gray-400 text-xs mt-1">456 Client Ave, Delhi</p>
+              </div>
+            </div>
+
+            <!-- Line Items -->
+            <div class="py-4" style="border-bottom:1px solid #e5e7eb">
+              <div class="grid grid-cols-12 pb-2" style="border-bottom:1px solid #e5e7eb">
+                <p class="col-span-6 text-xs uppercase tracking-widest text-gray-400">Description</p>
+                <p class="col-span-2 text-xs uppercase tracking-widest text-gray-400 text-right">Qty</p>
+                <p class="col-span-2 text-xs uppercase tracking-widest text-gray-400 text-right">Price</p>
+                <p class="col-span-2 text-xs uppercase tracking-widest text-gray-400 text-right">Amount</p>
+              </div>
+              <div class="grid grid-cols-12 py-3 items-center" style="border-bottom:1px solid #f3f4f6">
+                <p class="col-span-6 font-semibold text-gray-900">Web Design</p>
+                <p class="col-span-2 text-right text-gray-500">2.00</p>
+                <p class="col-span-2 text-right text-gray-500">₹25,000.00</p>
+                <p class="col-span-2 text-right font-semibold text-gray-900">₹50,000.00</p>
+              </div>
+              <div class="grid grid-cols-12 py-3 items-center">
+                <p class="col-span-6 font-semibold text-gray-900">Consulting</p>
+                <p class="col-span-2 text-right text-gray-500">5.00</p>
+                <p class="col-span-2 text-right text-gray-500">₹8,000.00</p>
+                <p class="col-span-2 text-right font-semibold text-gray-900">₹40,000.00</p>
+              </div>
+            </div>
+
+            <!-- Totals + QR -->
+            <div class="grid grid-cols-2 py-4 gap-6">
+              <!-- Left: Notes + QR -->
+              <div class="flex flex-col justify-between gap-4">
+                <div>
+                  <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Note</p>
+                  <p class="text-xs text-gray-400 leading-relaxed">Thank you for your business!</p>
+                </div>
+                <div class="flex flex-col items-start gap-1 mt-auto" id="qr-area">
+                  <p class="text-xs uppercase tracking-widest text-gray-400">Pay via UPI</p>
+                  <div id="qr-placeholder" class="relative h-20 w-20 overflow-hidden rounded-sm">
+                    <div class="absolute inset-0 shimmer-bg"></div>
+                    <div class="absolute inset-0 shimmer-overlay"></div>
+                  </div>
+                  <div id="qr-real" class="hidden">
+                    <div class="h-20 w-20 bg-gray-900 p-1">
+                      <div class="h-full w-full bg-white flex items-center justify-center">
+                        <svg width="56" height="56" viewBox="0 0 56 56"><rect x="0" y="0" width="8" height="8" fill="#000"/><rect x="8" y="0" width="8" height="8" fill="#000"/><rect x="16" y="0" width="8" height="8" fill="#000"/><rect x="32" y="0" width="8" height="8" fill="#000"/><rect x="40" y="0" width="8" height="8" fill="#000"/><rect x="48" y="0" width="8" height="8" fill="#000"/><rect x="0" y="8" width="8" height="8" fill="#000"/><rect x="16" y="8" width="8" height="8" fill="#000"/><rect x="24" y="8" width="8" height="8" fill="#000"/><rect x="40" y="8" width="8" height="8" fill="#000"/><rect x="48" y="8" width="8" height="8" fill="#000"/><rect x="0" y="16" width="8" height="8" fill="#000"/><rect x="8" y="16" width="8" height="8" fill="#000"/><rect x="16" y="16" width="8" height="8" fill="#000"/><rect x="32" y="16" width="8" height="8" fill="#000"/><rect x="40" y="16" width="8" height="8" fill="#000"/><rect x="48" y="16" width="8" height="8" fill="#000"/><rect x="0" y="24" width="8" height="8" fill="#000"/><rect x="24" y="24" width="8" height="8" fill="#000"/><rect x="0" y="32" width="8" height="8" fill="#000"/><rect x="8" y="32" width="8" height="8" fill="#000"/><rect x="16" y="32" width="8" height="8" fill="#000"/><rect x="48" y="32" width="8" height="8" fill="#000"/><rect x="16" y="40" width="8" height="8" fill="#000"/><rect x="32" y="40" width="8" height="8" fill="#000"/><rect x="48" y="40" width="8" height="8" fill="#000"/><rect x="0" y="48" width="8" height="8" fill="#000"/><rect x="8" y="48" width="8" height="8" fill="#000"/><rect x="16" y="48" width="8" height="8" fill="#000"/><rect x="32" y="48" width="8" height="8" fill="#000"/><rect x="40" y="48" width="8" height="8" fill="#000"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="text-xs font-mono text-gray-500">acme@okaxis</p>
+                </div>
+              </div>
+              <!-- Right: Totals -->
+              <div class="flex flex-col justify-end gap-0">
+                <div class="flex justify-between py-2" style="border-bottom:1px solid #f3f4f6">
+                  <span class="text-gray-400 text-xs">Subtotal</span>
+                  <span class="font-semibold text-gray-900 text-xs">₹90,000.00</span>
+                </div>
+                <div class="flex justify-between py-2" style="border-bottom:1px solid #f3f4f6">
+                  <span class="text-gray-400 text-xs">Discount (10%)</span>
+                  <span class="font-semibold text-gray-900 text-xs">-₹9,000.00</span>
+                </div>
+                <div class="flex justify-between py-2" style="border-bottom:1px solid #f3f4f6">
+                  <span class="text-gray-400 text-xs">Tax (18%)</span>
+                  <span class="font-semibold text-gray-900 text-xs">₹14,580.00</span>
+                </div>
+                <div class="flex justify-between pt-3">
+                  <span class="text-gray-400 text-sm">Total</span>
+                  <span class="text-xl font-bold text-gray-900">₹95,580.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== DOWNLOAD BUTTON (the focus of this story) ===== -->
+        <div class="mt-4">
+          <button id="download-btn" onclick="handleDownload()" disabled
+            class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium transition-all"
+            style="background:transparent;border:1px dashed var(--border);color:var(--foreground);cursor:not-allowed;opacity:0.5"
+            aria-disabled="true">
+            <!-- Download icon (Phosphor) -->
+            <svg id="dl-icon" width="16" height="16" viewBox="0 0 256 256" fill="currentColor">
+              <path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,106.34a8,8,0,0,0-11.32,11.32Z"></path>
+            </svg>
+            <!-- Spinner (hidden by default) -->
+            <svg id="dl-spinner" class="anim-spin" width="16" height="16" viewBox="0 0 256 256" fill="currentColor" style="display:none">
+              <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Z" opacity="0.2"></path>
+              <path d="M128,24a8,8,0,0,1,8,8V64a8,8,0,0,1-16,0V32A8,8,0,0,1,128,24Z"></path>
+              <path d="M224,120H192a8,8,0,0,0,0,16h32a8,8,0,0,0,0-16Z"></path>
+              <path d="M195.88,60.12a8,8,0,0,0-11.31,0l-22.63,22.63a8,8,0,0,0,11.31,11.31l22.63-22.63A8,8,0,0,0,195.88,60.12Z"></path>
+            </svg>
+            <span id="dl-text">Download PDF</span>
+          </button>
+          <p id="dl-error" class="text-xs mt-2 fade-in" style="color:var(--destructive);display:none" role="alert"></p>
+        </div>
+
+        <!-- State label -->
+        <p id="state-label" class="text-xs mt-3" style="color:var(--muted-foreground)">State: <strong>Disabled</strong> — finalize the invoice first</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let isFinalized = false;
+    let isDownloading = false;
+    let errorTimer = null;
+
+    const dlBtn = document.getElementById('download-btn');
+    const dlIcon = document.getElementById('dl-icon');
+    const dlSpinner = document.getElementById('dl-spinner');
+    const dlText = document.getElementById('dl-text');
+    const dlError = document.getElementById('dl-error');
+    const stateLabel = document.getElementById('state-label');
+    const finalizeBtn = document.getElementById('finalize-btn');
+    const finalizeText = document.getElementById('finalize-text');
+    const qrPlaceholder = document.getElementById('qr-placeholder');
+    const qrReal = document.getElementById('qr-real');
+
+    function setLabel(state, detail) {
+      stateLabel.innerHTML = 'State: <strong>' + state + '</strong> — ' + detail;
+    }
+
+    function updateDownloadButton() {
+      if (errorTimer) { clearTimeout(errorTimer); errorTimer = null; }
+      dlError.style.display = 'none';
+
+      if (isDownloading) {
+        dlBtn.disabled = true;
+        dlBtn.style.opacity = '0.7';
+        dlBtn.style.cursor = 'not-allowed';
+        dlBtn.setAttribute('aria-busy', 'true');
+        dlBtn.removeAttribute('aria-disabled');
+        dlIcon.style.display = 'none';
+        dlSpinner.style.display = '';
+        dlText.textContent = 'Generating PDF…';
+        setLabel('Downloading', 'rendering invoice at 3× scale…');
+      } else if (!isFinalized) {
+        dlBtn.disabled = true;
+        dlBtn.style.opacity = '0.5';
+        dlBtn.style.cursor = 'not-allowed';
+        dlBtn.setAttribute('aria-disabled', 'true');
+        dlBtn.removeAttribute('aria-busy');
+        dlIcon.style.display = '';
+        dlSpinner.style.display = 'none';
+        dlText.textContent = 'Download PDF';
+        setLabel('Disabled', 'finalize the invoice first');
+      } else {
+        dlBtn.disabled = false;
+        dlBtn.style.opacity = '1';
+        dlBtn.style.cursor = 'pointer';
+        dlBtn.removeAttribute('aria-disabled');
+        dlBtn.removeAttribute('aria-busy');
+        dlIcon.style.display = '';
+        dlSpinner.style.display = 'none';
+        dlText.textContent = 'Download PDF';
+        setLabel('Ready', 'click to download INV-001.pdf');
+      }
+    }
+
+    function showError(msg) {
+      dlError.textContent = msg;
+      dlError.style.display = '';
+      errorTimer = setTimeout(() => { dlError.style.display = 'none'; }, 5000);
+    }
+
+    function handleFinalize() {
+      if (isFinalized) {
+        // Regenerate
+        finalizeText.textContent = 'Generating…';
+        finalizeBtn.style.opacity = '0.7';
+        finalizeBtn.disabled = true;
+        setTimeout(() => {
+          finalizeBtn.style.opacity = '1';
+          finalizeBtn.disabled = false;
+          finalizeText.textContent = '✓ Regenerate QR';
+          qrPlaceholder.classList.add('hidden');
+          qrReal.classList.remove('hidden');
+          isFinalized = true;
+          updateDownloadButton();
+        }, 1200);
+        return;
+      }
+
+      const upi = document.getElementById('upi-input').value.trim();
+      if (!upi) return;
+
+      finalizeText.textContent = 'Generating…';
+      finalizeBtn.style.opacity = '0.7';
+      finalizeBtn.disabled = true;
+
+      setTimeout(() => {
+        isFinalized = true;
+        finalizeBtn.style.opacity = '1';
+        finalizeBtn.disabled = false;
+        finalizeText.textContent = '✓ Regenerate QR';
+        qrPlaceholder.classList.add('hidden');
+        qrReal.classList.remove('hidden');
+        updateDownloadButton();
+      }, 1500);
+    }
+
+    function handleDownload() {
+      if (!isFinalized || isDownloading) return;
+      isDownloading = true;
+      updateDownloadButton();
+
+      // Simulate PDF generation (2-4 seconds)
+      const duration = 2000 + Math.random() * 2000;
+      setTimeout(() => {
+        isDownloading = false;
+        const shouldFail = Math.random() < 0.3; // 30% chance of error for demo
+        if (shouldFail) {
+          updateDownloadButton();
+          showError('PDF generation failed. Please try again.');
+          setLabel('Error', 'generation failed, try again');
+        } else {
+          updateDownloadButton();
+          setLabel('Ready', 'INV-001.pdf downloaded successfully');
+        }
+      }, duration);
+    }
+
+    function checkFinalizeable() {
+      const upi = document.getElementById('upi-input').value.trim();
+      finalizeBtn.disabled = !upi;
+      finalizeBtn.style.opacity = upi ? '1' : '0.5';
+      // Editing resets finalization
+      if (isFinalized) {
+        isFinalized = false;
+        finalizeText.textContent = 'Generate Invoice';
+        qrPlaceholder.classList.remove('hidden');
+        qrReal.classList.add('hidden');
+        updateDownloadButton();
+      }
+    }
+
+    // Init
+    updateDownloadButton();
+  </script>
+</body>
+</html>
