@@ -6,7 +6,7 @@ import { InvoicePreview } from "@/components/invoice/invoice-preview";
 import { generateUPIQR } from "./lib/generate-upi-qr";
 import { downloadInvoiceAsPDF } from "./lib/download-invoice";
 import { Button } from "@/components/ui/button";
-import { Download } from "@phosphor-icons/react";
+import { Download, SpinnerGap } from "@phosphor-icons/react";
 import { Kbd } from "@/components/ui/kbd";
 import type { InvoiceData } from "@/app/types/invoice-types";
 import {
@@ -46,6 +46,8 @@ export default function Home() {
   const [isFinalized, setIsFinalized] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | undefined>(undefined);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const handleFinalize = async () => {
     if (!invoiceData.upiId) return;
@@ -74,6 +76,21 @@ export default function Home() {
     if (isFinalized) {
       setIsFinalized(false);
       setQrDataUrl(undefined);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+    setDownloadError(null);
+    try {
+      await downloadInvoiceAsPDF(invoiceData.invoiceId);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      setDownloadError("PDF generation failed. Please try again.");
+      setTimeout(() => setDownloadError(null), 5000);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -118,14 +135,24 @@ export default function Home() {
               />
             </div>
             <Button
-              onClick={() => downloadInvoiceAsPDF(invoiceData.invoiceId)}
-              disabled={!isFinalized}
+              onClick={handleDownloadPDF}
+              disabled={!isFinalized || isDownloading}
               variant="outline"
               className="gap-2 rounded-none mt-4"
+              aria-busy={isDownloading || undefined}
             >
-              <Download className="h-4 w-4" />
-              Download PDF
+              {isDownloading ? (
+                <SpinnerGap className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              {isDownloading ? "Generating PDF…" : "Download PDF"}
             </Button>
+            {downloadError && (
+              <p className="text-xs mt-2 text-destructive" role="alert">
+                {downloadError}
+              </p>
+            )}
           </div>
         </div>
       </main>
